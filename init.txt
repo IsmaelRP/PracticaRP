@@ -1,0 +1,1 @@
+Only final releases that works correctly and tested (it's not needed to be the final release).
