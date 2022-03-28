@@ -1,5 +1,0 @@
-<<<<<<< HEAD
-cambio
-=======
-hola que tal?
->>>>>>> development
