@@ -1,9 +1,0 @@
-
-%   Este script es para pruebas y no tener que trabajar con funciones
-
-data = readmatrix('./SP1.csv');     %   Cargar la base de datos en 'data'
-
-
-
-
-

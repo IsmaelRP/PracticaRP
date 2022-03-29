@@ -1,3 +1,5 @@
+clear;
+clc;
 
 %   Este script es para pruebas y no tener que trabajar con funciones
 
@@ -19,5 +21,16 @@ partidosCadizIdx = find(memberCadiz);%Obtener los indices de los partidos en los
 
 partidosCadiz = data(partidosCadizIdx,4:5)%Obtener la lista de partidos en los que juega cadiz
 
+totalPartidosCadiz = height(partidosCadiz)
+
+victoriasCasaCadiz = sum(memberCadizHome == 1 & strcmp(data.FTR, 'H'))
+victoriasVisitanteCadiz = sum(memberCadizAway == 1 & strcmp(data.FTR, 'A'))
+victoriasCadiz = victoriasCasaCadiz + victoriasVisitanteCadiz;
+
+derrotasCasaCadiz = sum(memberCadizHome == 1 & strcmp(data.FTR, 'A'))
+derrotasVisitanteCadiz = sum(memberCadizAway == 1 & strcmp(data.FTR, 'H'))
+derrotasCadiz = derrotasCasaCadiz + derrotasVisitanteCadiz;
+
+empatesCadiz = sum(memberCadiz == 1 & strcmp(data.FTR, 'D'))
 
 
