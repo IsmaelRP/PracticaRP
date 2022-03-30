@@ -13,8 +13,8 @@ data = readtable('./SP1.csv');     %   Cargar la base de datos en 'data'
 v = ismember(data.FTR, 'H')
 i = find(v)
 
-memberCadizHome = ismember(data.HomeTeam, 'Cadiz');%Obtener si cadiz juega en casa
-memberCadizAway = ismember(data.AwayTeam, 'Cadiz');%Obtener si cadiz juega fuera
+memberCadizHome = ismember(data.HomeTeam, "Barcelona");%Obtener si cadiz juega en casa
+memberCadizAway = ismember(data.AwayTeam, 'Barcelona');%Obtener si cadiz juega fuera
 memberCadiz = memberCadizAway + memberCadizHome;%Obtener si juega cadiz
 
 partidosCadizIdx = find(memberCadiz);%Obtener los indices de los partidos en los que juega cadiz
