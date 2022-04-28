@@ -1,7 +1,9 @@
 clear;
+clc;
 
 %   Este script es para pruebas y no tener que trabajar con funciones
-%   Calculo de errores mediante LOU de "quiniela.m", PARA GLM DE VICTORIAA, VICTORIA B
+
+%   Calculo de errores mediante LOU de "otroTest.m"
 
 %   Equipos de 1º y 2º división según sus índices
 equipos = ["Alaves" "Ath Bilbao" "Ath Madrid" "Barcelona" "Betis" "Cadiz" "Celta" "Elche" "Espanol" "Getafe" "Granada" "Levante" "Mallorca" "Osasuna" "Real Madrid" "Sevilla" "Sociedad" "Vallecano" "Villarreal" "Alcorcon" "Almeria" "Amorebieta" "Burgos" "Cartagena" "Eibar" "Fuenlabrada" "Girona" "Huesca" "Ibiza" "Las Palmas" "Leganes" "Lugo" "Malaga" "Mirandes" "Oviedo" "Ponferradina" "Sociedad B" "Sp Gijon" "Tenerife" "Valladolid" "Zaragoza"];
@@ -85,5 +87,4 @@ for i = 1:K             %   ESTIMACIÓN DE ERRORES MEDIANTE LOU (K = Y)
     mediaErrores = mediaErrores + (abs(error) / size(ytst, 2));
 end
 
-mediaErrores = mediaErrores / K;
-disp("Errores medio: " + mediaErrores);
+mediaErrores  

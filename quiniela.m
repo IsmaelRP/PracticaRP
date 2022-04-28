@@ -1,6 +1,5 @@
 function y = quiniela(x)
 
-y = [];
 
 %   Equipos de 1º y 2º división según sus índices
 equipos = ["Alaves" "Ath Bilbao" "Ath Madrid" "Barcelona" "Betis" "Cadiz" "Celta" "Elche" "Espanol" "Getafe" "Granada" "Levante" "Mallorca" "Osasuna" "Real Madrid" "Sevilla" "Sociedad" "Vallecano" "Villarreal" "Alcorcon" "Almeria" "Amorebieta" "Burgos" "Cartagena" "Eibar" "Fuenlabrada" "Girona" "Huesca" "Ibiza" "Las Palmas" "Leganes" "Lugo" "Malaga" "Mirandes" "Oviedo" "Ponferradina" "Sociedad B" "Sp Gijon" "Tenerife" "Valladolid" "Zaragoza"];
@@ -12,7 +11,11 @@ data1 = readtable('./SP1.csv');     %   Cargar la primera división
 data2 = readtable('./SP2.csv');     %   Cargar la segunda división
 
 nPartidos = height(data1) + height(data2);
-nVariables = 3;     %   Nº de características o patrones que vamos a tener en cuenta
+%   Variables a tener en cuenta:
+%               NOTA, NO SE HAN AÑADIDO ESTADÍSTICAS
+%               ADICIONALES DE OTRAS WEBS COMO BET365, QUE SE PUEDEN AÑADIR
+%   VictoriasA, victoriasB, tirosapuertaA, tirosapuertaB, faltasA, faltasB
+nVariables = 7;     %   Nº de características o patrones que vamos a tener en cuenta, contando los 1 del final
 y = zeros(nPartidos, 1);
 A = zeros(nPartidos, nVariables);
 j = 0;      %   Contador auxiliar para partidos de segunda división
@@ -20,6 +23,8 @@ j = 0;      %   Contador auxiliar para partidos de segunda división
 for i=1: (height(data1) + height(data2))
 
     if i <= height(data1)      %   Partido de primera division
+
+        %   El resultado será cual de los dos equipos ganó, osea las "y"
         if strcmp(data1(i,:).FTR, 'H')
             y(i,:) = 1;
         elseif strcmp(data1(i,:).FTR, 'D')
@@ -31,21 +36,21 @@ for i=1: (height(data1) + height(data2))
         equipoA = data1(i,:).HomeTeam;
         equipoB = data1(i,:).AwayTeam;
 
-        memberHome = ismember(data1.HomeTeam, equipoA);       % Obtener cuando juega en casa
-        memberAway = ismember(data1.AwayTeam, equipoA);       % Obtener cuando juega fuera
+        victoriasA = getTeamVictories(data1, equipoA);
+        victoriasB = getTeamVictories(data1, equipoB);
 
-        victoriasA = sum(memberHome == 1 & strcmp(data1.FTR, 'H')) + sum(memberAway == 1 & strcmp(data1.FTR, 'A'));
+        tirospuertaA = getTeamShotsOnTarget(data1, equipoA);
+        tirospuertaB = getTeamShotsOnTarget(data1, equipoB);
 
-        memberHome = ismember(data1.HomeTeam, equipoB);  % Obtener cuando juega en casa
-        memberAway = ismember(data1.AwayTeam, equipoB);  % Obtener cuando juega fuera
+        faltasA = getTeamFoulsCommited(data1, equipoA);
+        faltasB = getTeamFoulsCommited(data1, equipoB);
 
-        VictoriasB = sum(memberHome == 1 & strcmp(data1.FTR, 'H')) + sum(memberAway == 1 & strcmp(data1.FTR, 'A'));
-
-        A(i,:) = [victoriasA VictoriasB 1];
+        A(i,:) = [victoriasA victoriasB tirospuertaA tirospuertaB faltasA faltasB 1];
 
     else      %   Partido de segunda division
         j = j +1;
 
+        %   El resultado será cual de los dos equipos ganó, osea las "y"
         if strcmp(data2(j, :).FTR, 'H')
             y(i, :) = 1;
         elseif strcmp(data2(j, :).FTR, 'D')
@@ -54,20 +59,20 @@ for i=1: (height(data1) + height(data2))
             y(i, :) = 3;
         end
 
-        equipoA = data2(j, :).HomeTeam;
-        equipoB = data2(j, :).AwayTeam;
+        equipoA = data2(j,:).HomeTeam;
+        equipoB = data2(j,:).AwayTeam;
 
-        memberHome = ismember(data2.HomeTeam, equipoA);       % Obtener cuando juega en casa
-        memberAway = ismember(data2.AwayTeam, equipoA);       % Obtener cuando juega fuera
+        victoriasA = getTeamVictories(data2, equipoA);
+        victoriasB = getTeamVictories(data2, equipoB);
 
-        victoriasA = sum(memberHome == 1 & strcmp(data2.FTR, 'H')) + sum(memberAway == 1 & strcmp(data2.FTR, 'A'));
+        tirospuertaA = getTeamShotsOnTarget(data2, equipoA);
+        tirospuertaB = getTeamShotsOnTarget(data2, equipoB);
 
-        memberHome = ismember(data2.HomeTeam, equipoB);  % Obtener cuando juega en casa
-        memberAway = ismember(data2.AwayTeam, equipoB);  % Obtener cuando juega fuera
+        faltasA = getTeamFoulsCommited(data2, equipoA);
+        faltasB = getTeamFoulsCommited(data2, equipoB);
 
-        VictoriasB = sum(memberHome == 1 & strcmp(data2.FTR, 'H')) + sum(memberAway == 1 & strcmp(data2.FTR, 'A'));
+        A(i,:) = [victoriasA victoriasB tirospuertaA tirospuertaB faltasA faltasB 1];
 
-        A(i ,:) = [victoriasA VictoriasB 1];
     end
 end
 
@@ -83,18 +88,26 @@ for i=1:size(x,2)
     if x(1, i) <= 20 && x(2, i) <= 20       %   Partido de primera división
         v1 = getTeamVictories(data1, teamA);
         v2 = getTeamVictories(data1, teamB);
+        s1 = getTeamShotsOnTarget(data1, teamA);
+        s2 = getTeamShotsOnTarget(data1, teamB);
+        f1 = getTeamFoulsCommited(data1, teamA);
+        f2 = getTeamFoulsCommited(data1, teamB);
     elseif x(1, i) > 20 && x(2, i) > 20       %   Partido de primera división
         v1 = getTeamVictories(data2, teamA);
         v2 = getTeamVictories(data2, teamB);
+        s1 = getTeamShotsOnTarget(data2, teamA);
+        s2 = getTeamShotsOnTarget(data2, teamB);
+        f1 = getTeamFoulsCommited(data2, teamA);
+        f2 = getTeamFoulsCommited(data2, teamB);
     else       %   No es posible
         disp("No se pueden producir partidos entre primera y segunda división");
     end
 
-    data = [v1 v2 1];
+    data = [v1 v2 s1 s2 f1 f2 1];
     chances = data * coefs;
     porcentajes = [0; 0; 0];
     if chances < 2
-        porcentajes(2) = chances - 1
+        porcentajes(2) = chances - 1;
         porcentajes(1) = 1 - porcentajes(2);
     elseif chances < 3
         porcentajes(2) = chances - 2;
@@ -104,8 +117,4 @@ for i=1:size(x,2)
 
 
 end
-
-
-end
-
 
