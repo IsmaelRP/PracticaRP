@@ -1,12 +1,15 @@
-function y = quiniela(x)
+clear;
+clc;
 
-y = [];
+%   Este script es para pruebas y no tener que trabajar con funciones
+
+%   Calculo de errores mediante LOU de "otroTest.m"
 
 %   Equipos de 1º y 2º división según sus índices
 equipos = ["Alaves" "Ath Bilbao" "Ath Madrid" "Barcelona" "Betis" "Cadiz" "Celta" "Elche" "Espanol" "Getafe" "Granada" "Levante" "Mallorca" "Osasuna" "Real Madrid" "Sevilla" "Sociedad" "Vallecano" "Villarreal" "Alcorcon" "Almeria" "Amorebieta" "Burgos" "Cartagena" "Eibar" "Fuenlabrada" "Girona" "Huesca" "Ibiza" "Las Palmas" "Leganes" "Lugo" "Malaga" "Mirandes" "Oviedo" "Ponferradina" "Sociedad B" "Sp Gijon" "Tenerife" "Valladolid" "Zaragoza"];
 
 %   Para simular el input
-x = [1 13 6 19 4 12 17 9 21 29 27 32 23 33 11; 14 3 15 2 20 5 8 16 35 25 31 22 28 26 7];
+   x = [1 13 6 19 4 12 17 9 21 29 27 32 23 33 11; 14 3 15 2 20 5 8 16 35 25 31 22 28 26 7];
 
 data1 = readtable('./SP1.csv');     %   Cargar la primera división
 data2 = readtable('./SP2.csv');     %   Cargar la segunda división
@@ -73,39 +76,13 @@ end
 
 coefs = pinv(A) * y;           %   Obtengo los coeficientes del modelo generado
 
-%   USO REAL
+%   EJEMPLO DE USO
 
-y = [];
-for i=1:size(x,2)
-    teamA = getTeamNameByIndex(x(1, i));
-    teamB = getTeamNameByIndex(x(2, i));
+madridVictorias = 30;
+barsaVictorias = 15;
+datos = [madridVictorias barsaVictorias 1];
+porcentajeAEvaluar = datos * coefs;
 
-    if x(1, i) <= 20 && x(2, i) <= 20       %   Partido de primera división
-        v1 = getTeamVictories(data1, teamA);
-        v2 = getTeamVictories(data1, teamB);
-    elseif x(1, i) > 20 && x(2, i) > 20       %   Partido de primera división
-        v1 = getTeamVictories(data2, teamA);
-        v2 = getTeamVictories(data2, teamB);
-    else       %   No es posible
-        disp("No se pueden producir partidos entre primera y segunda división");
-    end
-
-    data = [v1 v2 1];
-    chances = data * coefs;
-    porcentajes = [0; 0; 0];
-    if chances < 2
-        porcentajes(2) = chances - 1
-        porcentajes(1) = 1 - porcentajes(2);
-    elseif chances < 3
-        porcentajes(2) = chances - 2;
-        porcentajes(3) = 1 - porcentajes(2);
-    end
-    y(:, i) = porcentajes;
-
-
-end
-
-
-end
+porcentajeAEvaluar
 
 
