@@ -1,6 +1,10 @@
 %La matriz x recibe una matriz 2xN siendo la primera fila los equipos en
 %casa y la segunda los visitantes.
-function y = quiniela(x)
+
+%%
+%%Quiniela medianta clasificación midiendo la distancia media a cada clase
+%%
+function yEstim = quinielaClasificacionV2(x)
 
 
 %   Equipos de 1º y 2º división según sus índices
@@ -17,7 +21,7 @@ nPartidos = height(data1) + height(data2);
 %               NOTA, NO SE HAN AÑADIDO ESTADÍSTICAS
 %               ADICIONALES DE OTRAS WEBS COMO BET365, QUE SE PUEDEN AÑADIR
 %   VictoriasA, victoriasB, tirosapuertaA, tirosapuertaB, faltasA, faltasB
-nVariables = 7;     %   Nº de características o patrones que vamos a tener en cuenta, contando los 1 del final
+nVariables = 6;     %   Nº de características o patrones que vamos a tener en cuenta
 y = zeros(nPartidos, 1);
 A = zeros(nPartidos, nVariables);
 j = 0;      %   Contador auxiliar para partidos de segunda división
@@ -47,7 +51,7 @@ for i=1: (height(data1) + height(data2))
         faltasA = getTeamFoulsCommited(data1, equipoA);
         faltasB = getTeamFoulsCommited(data1, equipoB);
 
-        A(i,:) = [victoriasA victoriasB tirospuertaA tirospuertaB faltasA faltasB 1];
+        A(i,:) = [victoriasA victoriasB tirospuertaA tirospuertaB faltasA faltasB];
 
     else      %   Partido de segunda division
         j = j +1;
@@ -73,32 +77,23 @@ for i=1: (height(data1) + height(data2))
         faltasA = getTeamFoulsCommited(data2, equipoA);
         faltasB = getTeamFoulsCommited(data2, equipoB);
 
-        A(i,:) = [victoriasA victoriasB tirospuertaA tirospuertaB faltasA faltasB 1];
+        A(i,:) = [victoriasA victoriasB tirospuertaA tirospuertaB faltasA faltasB];
 
     end
 end
 
-coefs = pinv(A) * y;           %   Obtengo los coeficientes del modelo generado
+%coefs = pinv(A) * y;           %   Obtengo los coeficientes del modelo generado
 
 
-%{
-A = A(:, 1:nVariables-1)'
-y = y'
+A = A';
+y = y';
 
-m = meanpat(A)
-A = subpat(A,m)
+elementosPorClase = [length(find(y==1));length(find(y==2)); length(find(y==3))];
+%A partir de aquí empieza la clasificación
 
-
-W=fisher(A,y,7) %A+rand(size(A)) * 0.001 
-x1 = W*A
-plotpat(x1,y)
-%}
-
-pause;
 
 %   USO REAL
 
-y = [];
 for i=1:size(x,2)
     teamA = getTeamNameByIndex(x(1, i));
     teamB = getTeamNameByIndex(x(2, i));
@@ -121,19 +116,26 @@ for i=1:size(x,2)
         disp("No se pueden producir partidos entre primera y segunda división");
     end
 
-    data = [v1 v2 s1 s2 f1 f2 1];
-    chances = data * coefs;
-    porcentajes = [0; 0; 0];
-    if chances < 2
-        porcentajes(2) = chances - 1;
-        porcentajes(1) = 1 - porcentajes(2);
-    elseif chances < 3
-        porcentajes(2) = chances - 2;
-        porcentajes(3) = 1 - porcentajes(2);
-    end
-    y(:, i) = porcentajes;
+    dato = [v1 v2 s1 s2 f1 f2]';
 
-%}
+      d               = d_euclid(A,dato);%distancias de todos los xTrn al dato
 
+      mediaDistanciasClase1 = sum(d(find(y==1)))/elementosPorClase(1);
+      mediaDistanciasClase2 = sum(d(find(y==2)))/elementosPorClase(2);
+      mediaDistanciasClase3 = sum(d(find(y==3)))/elementosPorClase(3);
+
+      mediaDistancias = [mediaDistanciasClase1; mediaDistanciasClase2; mediaDistanciasClase3];
+      sumaDistanciasMedias = sum(mediaDistancias);
+      
+      porcentajes = [];
+      porcentajes(1,1) = mediaDistancias(1)/sumaDistanciasMedias;
+      porcentajes(2,1) = mediaDistancias(2)/sumaDistanciasMedias;
+      porcentajes(3,1) = mediaDistancias(3)/sumaDistanciasMedias;
+
+
+    yEstim(:, i) = porcentajes;
+
+
+end
 end
 

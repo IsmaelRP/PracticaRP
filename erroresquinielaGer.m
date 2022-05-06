@@ -1,22 +1,20 @@
-%La matriz x recibe una matriz 2xN siendo la primera fila los equipos en
-%casa y la segunda los visitantes.
-function y = quiniela(x)
+clear;
 
+%   Este script es para pruebas y no tener que trabajar con funciones
+%   Calculo de errores mediante LOU de "quiniela.m", PARA GLM DE:
+%       VICTORIAA, VICTORIAB, TIROSA, TIROSB, FALTASA, FALTASB
 
 %   Equipos de 1º y 2º división según sus índices
 equipos = ["Alaves" "Ath Bilbao" "Ath Madrid" "Barcelona" "Betis" "Cadiz" "Celta" "Elche" "Espanol" "Getafe" "Granada" "Levante" "Mallorca" "Osasuna" "Real Madrid" "Sevilla" "Sociedad" "Vallecano" "Villarreal" "Alcorcon" "Almeria" "Amorebieta" "Burgos" "Cartagena" "Eibar" "Fuenlabrada" "Girona" "Huesca" "Ibiza" "Las Palmas" "Leganes" "Lugo" "Malaga" "Mirandes" "Oviedo" "Ponferradina" "Sociedad B" "Sp Gijon" "Tenerife" "Valladolid" "Zaragoza"];
 
 %   Para simular el input
-x = [1 13 6 19 4 12 17 9 21 29 27 32 23 33 11; 14 3 15 2 20 5 8 16 35 25 31 22 28 26 7];
+%x = [1 13 6 19 4 12 17 9 21 29 27 32 23 33 11; 14 3 15 2 20 5 8 16 35 25 31 22 28 26 7];
 
 data1 = readtable('./SP1.csv');     %   Cargar la primera división
 data2 = readtable('./SP2.csv');     %   Cargar la segunda división
 
 nPartidos = height(data1) + height(data2);
-%   Variables a tener en cuenta:
-%               NOTA, NO SE HAN AÑADIDO ESTADÍSTICAS
-%               ADICIONALES DE OTRAS WEBS COMO BET365, QUE SE PUEDEN AÑADIR
-%   VictoriasA, victoriasB, tirosapuertaA, tirosapuertaB, faltasA, faltasB
+
 nVariables = 7;     %   Nº de características o patrones que vamos a tener en cuenta, contando los 1 del final
 y = zeros(nPartidos, 1);
 A = zeros(nPartidos, nVariables);
@@ -78,62 +76,73 @@ for i=1: (height(data1) + height(data2))
     end
 end
 
-coefs = pinv(A) * y;           %   Obtengo los coeficientes del modelo generado
+%coefs = pinv(A) * y;           %   Obtengo los coeficientes del modelo generado
 
 
-%{
-A = A(:, 1:nVariables-1)'
-y = y'
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%ISMAEL
+mediaErrores = 0;
+K = length(y);
 
-m = meanpat(A)
-A = subpat(A,m)
-
-
-W=fisher(A,y,7) %A+rand(size(A)) * 0.001 
-x1 = W*A
-plotpat(x1,y)
-%}
-
-pause;
-
-%   USO REAL
-
-y = [];
-for i=1:size(x,2)
-    teamA = getTeamNameByIndex(x(1, i));
-    teamB = getTeamNameByIndex(x(2, i));
-
-    if x(1, i) <= 20 && x(2, i) <= 20       %   Partido de primera división
-        v1 = getTeamVictories(data1, teamA);
-        v2 = getTeamVictories(data1, teamB);
-        s1 = getTeamShotsOnTarget(data1, teamA);
-        s2 = getTeamShotsOnTarget(data1, teamB);
-        f1 = getTeamFoulsCommited(data1, teamA);
-        f2 = getTeamFoulsCommited(data1, teamB);
-    elseif x(1, i) > 20 && x(2, i) > 20       %   Partido de primera división
-        v1 = getTeamVictories(data2, teamA);
-        v2 = getTeamVictories(data2, teamB);
-        s1 = getTeamShotsOnTarget(data2, teamA);
-        s2 = getTeamShotsOnTarget(data2, teamB);
-        f1 = getTeamFoulsCommited(data2, teamA);
-        f2 = getTeamFoulsCommited(data2, teamB);
-    else       %   No es posible
-        disp("No se pueden producir partidos entre primera y segunda división");
-    end
-
-    data = [v1 v2 s1 s2 f1 f2 1];
-    chances = data * coefs;
-    porcentajes = [0; 0; 0];
-    if chances < 2
-        porcentajes(2) = chances - 1;
-        porcentajes(1) = 1 - porcentajes(2);
-    elseif chances < 3
-        porcentajes(2) = chances - 2;
-        porcentajes(3) = 1 - porcentajes(2);
-    end
-    y(:, i) = porcentajes;
-
-%}
-
+for i = 1:K             %   ESTIMACIÓN DE ERRORES MEDIANTE LOU (K = Y)
+    [xtrn, xtst, ytrn, ytst] = crossval(A', y', K, i);
+    coefs = pinv(xtrn') * ytrn';
+    yest = xtst' * coefs;
+    error = (ytst - yest');
+    mediaErrores = mediaErrores + (abs(error) / size(ytst, 2));
 end
 
+mediaErrores = mediaErrores / K;
+disp("Errores medio: " + mediaErrores);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+[pruebasX, pruebasY] = getDatosPrueba();
+x = pruebasX;
+yEstim = [];
+    for i=1:size(x,2)
+        teamA = getTeamNameByIndex(x(1, i));
+        teamB = getTeamNameByIndex(x(2, i));
+    
+        if x(1, i) <= 20 && x(2, i) <= 20       %   Partido de primera división
+            v1 = getTeamVictories(data1, teamA);
+            v2 = getTeamVictories(data1, teamB);
+            s1 = getTeamShotsOnTarget(data1, teamA);
+            s2 = getTeamShotsOnTarget(data1, teamB);
+            f1 = getTeamFoulsCommited(data1, teamA);
+            f2 = getTeamFoulsCommited(data1, teamB);
+        elseif x(1, i) > 20 && x(2, i) > 20       %   Partido de primera división
+            v1 = getTeamVictories(data2, teamA);
+            v2 = getTeamVictories(data2, teamB);
+            s1 = getTeamShotsOnTarget(data2, teamA);
+            s2 = getTeamShotsOnTarget(data2, teamB);
+            f1 = getTeamFoulsCommited(data2, teamA);
+            f2 = getTeamFoulsCommited(data2, teamB);
+        else       %   No es posible
+            disp("No se pueden producir partidos entre primera y segunda división");
+        end
+    
+        K = 10;%Número de vecinos cercanos
+        data = [v1 v2 s1 s2 f1 f2 1];
+        
+        %%
+        chances = data * coefs;
+        porcentajes = [0; 0; 0];
+        if chances <= 2
+            porcentajes(2) = chances - 1;
+            porcentajes(1) = 1 - porcentajes(2);
+        elseif chances <= 3
+            porcentajes(2) = chances - 2;
+            porcentajes(3) = 1 - porcentajes(2);
+        end
+        [~,yEstim(i)] = max(porcentajes);
+        %%
+
+        %yEstim(i) = floor(data * coefs);
+
+    end
+
+
+    result = [pruebasY; yEstim];
+
+    nErrores = length(find(pruebasY ~= yEstim))
+    porcent = nErrores / length(yEstim)

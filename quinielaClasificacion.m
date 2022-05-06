@@ -1,13 +1,15 @@
 %La matriz x recibe una matriz 2xN siendo la primera fila los equipos en
 %casa y la segunda los visitantes.
-function y = quiniela(x)
+function yEstim = quinielaClasificacion(x)
 
 
 %   Equipos de 1º y 2º división según sus índices
 equipos = ["Alaves" "Ath Bilbao" "Ath Madrid" "Barcelona" "Betis" "Cadiz" "Celta" "Elche" "Espanol" "Getafe" "Granada" "Levante" "Mallorca" "Osasuna" "Real Madrid" "Sevilla" "Sociedad" "Vallecano" "Villarreal" "Alcorcon" "Almeria" "Amorebieta" "Burgos" "Cartagena" "Eibar" "Fuenlabrada" "Girona" "Huesca" "Ibiza" "Las Palmas" "Leganes" "Lugo" "Malaga" "Mirandes" "Oviedo" "Ponferradina" "Sociedad B" "Sp Gijon" "Tenerife" "Valladolid" "Zaragoza"];
 
 %   Para simular el input
-x = [1 13 6 19 4 12 17 9 21 29 27 32 23 33 11; 14 3 15 2 20 5 8 16 35 25 31 22 28 26 7];
+%x = [1 13 6 19 4 12 17 9 21 29 27 32 23 33 11; 14 3 15 2 20 5 8 16 35 25 31 22 28 26 7];
+x = [ 13  2  7  6  5 10 20  9 22 26 27 29 34 37  3
+      11 18  1  8  4 19 16 14 23 41 38 39 36 24 15 ]
 
 data1 = readtable('./SP1.csv');     %   Cargar la primera división
 data2 = readtable('./SP2.csv');     %   Cargar la segunda división
@@ -17,7 +19,7 @@ nPartidos = height(data1) + height(data2);
 %               NOTA, NO SE HAN AÑADIDO ESTADÍSTICAS
 %               ADICIONALES DE OTRAS WEBS COMO BET365, QUE SE PUEDEN AÑADIR
 %   VictoriasA, victoriasB, tirosapuertaA, tirosapuertaB, faltasA, faltasB
-nVariables = 7;     %   Nº de características o patrones que vamos a tener en cuenta, contando los 1 del final
+nVariables = 6;     %   Nº de características o patrones que vamos a tener en cuenta
 y = zeros(nPartidos, 1);
 A = zeros(nPartidos, nVariables);
 j = 0;      %   Contador auxiliar para partidos de segunda división
@@ -47,7 +49,7 @@ for i=1: (height(data1) + height(data2))
         faltasA = getTeamFoulsCommited(data1, equipoA);
         faltasB = getTeamFoulsCommited(data1, equipoB);
 
-        A(i,:) = [victoriasA victoriasB tirospuertaA tirospuertaB faltasA faltasB 1];
+        A(i,:) = [victoriasA victoriasB tirospuertaA tirospuertaB faltasA faltasB];
 
     else      %   Partido de segunda division
         j = j +1;
@@ -73,32 +75,23 @@ for i=1: (height(data1) + height(data2))
         faltasA = getTeamFoulsCommited(data2, equipoA);
         faltasB = getTeamFoulsCommited(data2, equipoB);
 
-        A(i,:) = [victoriasA victoriasB tirospuertaA tirospuertaB faltasA faltasB 1];
+        A(i,:) = [victoriasA victoriasB tirospuertaA tirospuertaB faltasA faltasB];
 
     end
 end
 
-coefs = pinv(A) * y;           %   Obtengo los coeficientes del modelo generado
+%coefs = pinv(A) * y;           %   Obtengo los coeficientes del modelo generado
 
 
-%{
-A = A(:, 1:nVariables-1)'
-y = y'
+A = A';
+y = y';
 
-m = meanpat(A)
-A = subpat(A,m)
+%A partir de aquí empieza la clasificación
 
 
-W=fisher(A,y,7) %A+rand(size(A)) * 0.001 
-x1 = W*A
-plotpat(x1,y)
-%}
-
-pause;
 
 %   USO REAL
 
-y = [];
 for i=1:size(x,2)
     teamA = getTeamNameByIndex(x(1, i));
     teamB = getTeamNameByIndex(x(2, i));
@@ -121,19 +114,23 @@ for i=1:size(x,2)
         disp("No se pueden producir partidos entre primera y segunda división");
     end
 
-    data = [v1 v2 s1 s2 f1 f2 1];
-    chances = data * coefs;
-    porcentajes = [0; 0; 0];
-    if chances < 2
-        porcentajes(2) = chances - 1;
-        porcentajes(1) = 1 - porcentajes(2);
-    elseif chances < 3
-        porcentajes(2) = chances - 2;
-        porcentajes(3) = 1 - porcentajes(2);
-    end
-    y(:, i) = porcentajes;
+    K = 7;%Número de vecinos cercanos
+    dato = [v1 v2 s1 s2 f1 f2]';
 
-%}
+      d               = d_euclid(A,dato);%distancias de todos los xTrn al dato
+      [~,pos]         = sort(d); %Ordenados por distancia
+      clases_cercanas = y(pos(2:K));%ToDo si el partido no se ha jugado todavía poner pos(1:K)
+      
+      porcentajes = [];
+      porcentajes(1,1) = length(find(clases_cercanas == 1));
+      porcentajes(2,1) = length(find(clases_cercanas == 2));
+      porcentajes(3,1) = length(find(clases_cercanas == 3));
 
+      porcentajes = porcentajes./length(clases_cercanas);
+
+    yEstim(:, i) = porcentajes;
+
+
+end
 end
 
