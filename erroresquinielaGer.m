@@ -146,3 +146,5 @@ yEstim = [];
 
     nErrores = length(find(pruebasY ~= yEstim))
     porcent = nErrores / length(yEstim)
+
+    save('./archivosPruebas/ErrorRegresion.mat', 'nErrores', 'porcent')

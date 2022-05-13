@@ -7,9 +7,10 @@ function yEstim = quinielaClasificacion(x)
 equipos = ["Alaves" "Ath Bilbao" "Ath Madrid" "Barcelona" "Betis" "Cadiz" "Celta" "Elche" "Espanol" "Getafe" "Granada" "Levante" "Mallorca" "Osasuna" "Real Madrid" "Sevilla" "Sociedad" "Vallecano" "Villarreal" "Alcorcon" "Almeria" "Amorebieta" "Burgos" "Cartagena" "Eibar" "Fuenlabrada" "Girona" "Huesca" "Ibiza" "Las Palmas" "Leganes" "Lugo" "Malaga" "Mirandes" "Oviedo" "Ponferradina" "Sociedad B" "Sp Gijon" "Tenerife" "Valladolid" "Zaragoza"];
 
 %   Para simular el input
-%x = [1 13 6 19 4 12 17 9 21 29 27 32 23 33 11; 14 3 15 2 20 5 8 16 35 25 31 22 28 26 7];
-x = [ 13  2  7  6  5 10 20  9 22 26 27 29 34 37  3
-      11 18  1  8  4 19 16 14 23 41 38 39 36 24 15 ]
+x = [1 13 6 19 4 12 17 9 21 29 27 32 23 33 11; 14 3 15 2 20 5 8 16 35 25 31 22 28 26 7];
+x = [17 19 15; 6 20 12];
+%x = [ 13  2  7  6  5 10 20  9 22 26 27 29 34 37  3
+%     11 18  1  8  4 19 16 14 23 41 38 39 36 24 15 ]
 
 data1 = readtable('./SP1.csv');     %   Cargar la primera división
 data2 = readtable('./SP2.csv');     %   Cargar la segunda división
@@ -114,12 +115,12 @@ for i=1:size(x,2)
         disp("No se pueden producir partidos entre primera y segunda división");
     end
 
-    K = 7;%Número de vecinos cercanos
+    K = 10;%Número de vecinos cercanos
     dato = [v1 v2 s1 s2 f1 f2]';
 
       d               = d_euclid(A,dato);%distancias de todos los xTrn al dato
       [~,pos]         = sort(d); %Ordenados por distancia
-      clases_cercanas = y(pos(2:K));%ToDo si el partido no se ha jugado todavía poner pos(1:K)
+      clases_cercanas = y(pos(1:K));%ToDo si el partido no se ha jugado todavía poner pos(1:K)
       
       porcentajes = [];
       porcentajes(1,1) = length(find(clases_cercanas == 1));
@@ -132,5 +133,6 @@ for i=1:size(x,2)
 
 
 end
+format short
 end
 

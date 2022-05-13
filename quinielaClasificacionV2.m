@@ -13,6 +13,9 @@ equipos = ["Alaves" "Ath Bilbao" "Ath Madrid" "Barcelona" "Betis" "Cadiz" "Celta
 %   Para simular el input
 x = [1 13 6 19 4 12 17 9 21 29 27 32 23 33 11; 14 3 15 2 20 5 8 16 35 25 31 22 28 26 7];
 
+x = [ 13  2  7  6  5 10 20  9 22 26 27 29 34 37  3
+     11 18  1  8  4 19 16 14 23 41 38 39 36 24 15 ]
+
 data1 = readtable('./SP1.csv');     %   Cargar la primera división
 data2 = readtable('./SP2.csv');     %   Cargar la segunda división
 

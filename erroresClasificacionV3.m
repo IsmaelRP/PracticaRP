@@ -159,7 +159,8 @@ end
 erroresK
 erroresKporent
 %save('ErroresClasif', ErroresK)
-plot(erroresK,'b'); hold on;
+
+save('./archivosPruebas/ErroresClasifV3_K_Centroides.mat', 'erroresK', 'erroresKporent')
 
 
 

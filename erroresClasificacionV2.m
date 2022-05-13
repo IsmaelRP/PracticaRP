@@ -159,6 +159,7 @@ porcent = 0;
 erroresK
 erroresKporent
 %plot(erroresK,'b'); hold on;
+save('./archivosPruebas/ErroresClasifV2(distanciasMediasAClases).mat', 'erroresK', 'erroresKporent')
 
 
 end
